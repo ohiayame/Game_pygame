@@ -16,7 +16,7 @@ player_speed = 5
 
 enemy = pygame.image.load('C:\Game_pygame\game\enemy.png')
 enemy_rect = enemy.get_rect()
-enemy_rect.x = random.randint(0,screen.get_width() - enemy_rect.width)
+enemy_rect.x = random.randint(0,screen.get_width() - enemy_rect.width) # 0
 enemy_rect.y = 0
 enemy_speed = 7
 
@@ -35,11 +35,10 @@ game_over = False
 clock = pygame.time.Clock()
 FPS = 60
 
-
-
 while running:
     
     clock.tick(FPS)
+    # dt = clock.tick(FPS) / 1000
     # timer_start -= dt
     # if timer_start <= 0:
     #     running = False
@@ -76,7 +75,7 @@ while running:
     for rect in enemy_rects:        
         rect.y += enemy_speed
         if rect.y + rect.height >= screen.get_height():
-            rect.y = -rect.height
+            rect.y = -rect.height # 0
             rect.x = random.randint(0,screen.get_width() - rect.width)
             
         if player_rect.colliderect(rect) and not game_over:
@@ -91,8 +90,8 @@ while running:
     
     if not game_over:
         screen.fill((255,255,255)) 
-    # timer_text = font.render(str(round(timer_start,2))+"s",True,(0,0,0))     
-    # screen.blit(timer_text,(10,10))
+        # timer_text = font.render(str(round(timer_start,2))+"s",True,(0,0,0))     
+        # screen.blit(timer_text,(10,10))
         for rect in enemy_rects:
             screen.blit(enemy, rect)
         # screen.blit(enemy,enemy_rect)      
