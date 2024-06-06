@@ -77,14 +77,13 @@ while running:
     if ball_y >= HEIGHT - 60:
         score_text = font.render("Score: " + str(score), True, WHITE)
         screen.blit(score_text, (400, 300))
-       
         running = False
 
     # ボールがパドルに当たったら反射
     if (ball_y + BALL_SIZE >= paddle_y ) and ( ball_x + BALL_SIZE >= paddle_x ) and ( ball_x <= paddle_x + PADDLE_WIDTH) :
         score += 1
         ball_dy *= -1
-     # スコアが5の倍数のときにボールの速度を上げる
+    # スコアが5の倍数のときにボールの速度を上げる
     if score % 5 == 0 and score != 0:
         if ball_dx > 0:
             ball_dx += 0.03
