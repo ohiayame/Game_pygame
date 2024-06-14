@@ -5,7 +5,7 @@ import random
 pygame.init()
 
 # 화면 설정
-screen_width, screen_height = 600, 800  # 화면 크기 변경
+screen_width, screen_height = 630, 800  # 화면 크기 변경
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("숫자 야구 게임")
 
@@ -14,10 +14,14 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
 RED = (255, 0, 0)
-GREEN = (0, 255, 0)  # 새로운 색상 추가
 
 # 폰트 설정 (시스템에 설치된 폰트 사용)
 font = pygame.font.Font(None, 40)  # None 대신에 폰트 파일 경로를 지정할 수 있습니다.
+
+# 공 이미지 로드
+ball_size = 100  # 공 크기 설정
+ball_image = pygame.image.load("C:\Game_pygame\s_ball.png")
+ball_image = pygame.transform.scale(ball_image, (ball_size, ball_size))
 
 # 난수 생성
 cp_li = []
@@ -33,15 +37,17 @@ player_input = []
 result_text = ""
 game_over = False
 attempts = []
+game_over_text = ""  # 게임 오버 텍스트 초기화
 
 # 숫자 버튼 생성
 button_size = 70
 buttons = []
 button_color = BLUE  # 버튼 색상 변경
 for i in range(10):
-    x = (i % 5) * (button_size + 20) + 50
+    x = (i % 5) * (button_size + 20) + 90
     y = (i // 5) * (button_size + 20) + 400
     buttons.append(pygame.Rect(x, y, button_size, button_size))
+game_strike = 0
 
 # 게임 루프
 running = True
@@ -63,7 +69,7 @@ while running:
     # 이전 입력 및 결과 표시
     y_offset = 100
     for attempt in attempts:
-        attempt_text = f"{attempt['count']} play: input value {attempt['input']} - result {attempt['result']}"
+        attempt_text = f"{attempt['count']} ) input: {attempt['input']}  {attempt['result']}"
         attempt_display = font.render(attempt_text, True, BLACK)
         screen.blit(attempt_display, (20, y_offset))
         y_offset += 40
@@ -71,13 +77,22 @@ while running:
     # 결과 텍스트 표시
     result_display = font.render(result_text, True, RED)
     screen.blit(result_display, (20, 70))
-
+            
     # 정답 텍스트 표시
     if game_over:
         answer_text = f"answer : {' '.join(map(str, cp_li))}"
         answer_display = font.render(answer_text, True, BLACK)
         screen.blit(answer_display, (screen_width // 2 - answer_display.get_width() // 2, screen_height // 2 - answer_display.get_height() // 2))
-
+        
+        game_over_display = font.render(game_over_text, True, BLACK)
+        screen.blit(game_over_display, (screen_width // 2 - game_over_display.get_width() // 2, (screen_height // 2 - game_over_display.get_height() // 2) - 40))
+    
+    # 스트라이크 수에 따른 공 이미지 표시
+    for i in range(game_strike):
+        x = screen_width // 2 - ball_image.get_width() // 2 - (game_strike - 1) * (ball_image.get_width() // 2)
+        y = screen_height // 2 - ball_image.get_height() // 2 + 250
+        screen.blit(ball_image, (x + i * ball_image.get_width(), y))
+        
     # 이벤트 처리
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -98,27 +113,26 @@ while running:
                                 game_ball += 1
                         if game_strike == 0 and game_ball == 0:
                             game_out += 1
-                        if game_strike == 3:
-                            result_text = "The game is over! your win!!"
-                            game_over = True
-                        elif game_count == 5 or game_out == 2:
-                            result_text = "The game is over! your lose" + (" (5play over)" if game_count == 5 else " (2out)")
-                            game_over = True
-                        else:
-                            result_text = f"reuslt: {game_strike} Strike, {game_ball} Ball" + (f", {game_out} Out" if game_out > 0 else "")
+                        
+                        result_text = f"result: {game_strike} Strike, {game_ball} Ball" + (f", {game_out} Out" if game_out > 0 else "")
+                        
                         attempts.append({
                             'count': game_count,
                             'input': ' '.join(map(str, player_input)),
                             'result': result_text
                         })
+                        if game_strike == 3:
+                            game_over_text = "The game is over! your win!!"
+                            game_over = True
+                        elif game_count >= 5 or game_out >= 2:
+                            game_over_text = "The game is over! your lose" + (" (5play over)" if game_count == 5 else " (2out)")
+                            game_over = True
                         player_input = []
 
     # 화면 업데이트
     pygame.display.flip()
 
-# 정답 출력
-print("answer:", *cp_li)
-
 # 게임 종료 대기
-pygame.time.wait(3000)
+pygame.time.wait(10)
+
 pygame.quit()
