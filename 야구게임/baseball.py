@@ -5,23 +5,29 @@ import random
 pygame.init()
 
 # 화면 설정
-screen_width, screen_height = 630, 800  # 화면 크기 변경
+screen_width, screen_height = 630, 900  # 화면 크기 변경
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("숫자 야구 게임")
 
 # 색상 설정
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-BLUE = (0, 0, 255)
-RED = (255, 0, 0)
+WHITE = (242, 230, 255)
+BLACK = (100, 112, 125)
+BLUE = (255, 255, 255)
+RED = (255, 142, 165)
+PURPLE = (66, 181, 255)
 
 # 폰트 설정 (시스템에 설치된 폰트 사용)
 font = pygame.font.Font(None, 40)  # None 대신에 폰트 파일 경로를 지정할 수 있습니다.
 
 # 공 이미지 로드
 ball_size = 100  # 공 크기 설정
-ball_image = pygame.image.load("C:\Game_pygame\s_ball.png")
+ball_image = pygame.image.load("C:\Game_pygame\야구게임\s_ball.png")
 ball_image = pygame.transform.scale(ball_image, (ball_size, ball_size))
+
+# glove 이미지 로드
+glove_size = 100
+glove_image = pygame.image.load("C:\Game_pygame\야구게임\glove.png")
+glove_image = pygame.transform.scale(glove_image, (glove_size,glove_size))
 
 # 난수 생성
 cp_li = []
@@ -58,7 +64,7 @@ while running:
     if not game_over:
         for i, rect in enumerate(buttons):
             pygame.draw.rect(screen, button_color, rect)  # 버튼 색상 적용
-            text = font.render(str(i), True, WHITE)
+            text = font.render(str(i), True, PURPLE)
             screen.blit(text, (rect.x + (button_size - text.get_width()) // 2, rect.y + (button_size - text.get_height()) // 2))  # 버튼 중앙에 텍스트 표시
 
         # 게임 상태 표시
@@ -77,7 +83,19 @@ while running:
     # 결과 텍스트 표시
     result_display = font.render(result_text, True, RED)
     screen.blit(result_display, (20, 70))
-            
+    
+    # 스트라이크 수에 따른 공 이미지 표시
+    for i in range(game_strike):
+        x = screen_width // 2 - ball_image.get_width() // 2 - (game_strike - 1) * (ball_image.get_width() // 2)
+        y = screen_height // 2 - ball_image.get_height() // 2 + 200
+        screen.blit(ball_image, (x + i * ball_image.get_width(), y))
+    # out수에 따른 glove이미지 표시
+    if game_out > 0:
+        for i in range(game_out):
+            x = screen_width // 2 - glove_image.get_width() // 2 - (game_out - 1) * (glove_image.get_width() // 2)
+            y = screen_height // 2 - glove_image.get_height() // 2 + 350
+            screen.blit(glove_image, (x + i * glove_image.get_width()+ 2, y))
+        
     # 정답 텍스트 표시
     if game_over:
         answer_text = f"answer : {' '.join(map(str, cp_li))}"
@@ -86,12 +104,6 @@ while running:
         
         game_over_display = font.render(game_over_text, True, BLACK)
         screen.blit(game_over_display, (screen_width // 2 - game_over_display.get_width() // 2, (screen_height // 2 - game_over_display.get_height() // 2) - 40))
-    
-    # 스트라이크 수에 따른 공 이미지 표시
-    for i in range(game_strike):
-        x = screen_width // 2 - ball_image.get_width() // 2 - (game_strike - 1) * (ball_image.get_width() // 2)
-        y = screen_height // 2 - ball_image.get_height() // 2 + 250
-        screen.blit(ball_image, (x + i * ball_image.get_width(), y))
         
     # 이벤트 처리
     for event in pygame.event.get():
