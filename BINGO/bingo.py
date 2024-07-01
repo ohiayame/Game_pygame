@@ -1,90 +1,3 @@
-# import pygame
-# import random
-
-# pygame.init()
-
-# screen_width, screen_height = 630, 900
-# screen = pygame.display.set_mode((screen_width,screen_height))
-# pygame.display.set_caption("BINGO GAME")
-
-# PURPLE = (242, 230, 255)
-# GLAY = (100, 112, 125)
-# WHITE = (255, 255, 255)
-# PINK = (255, 142, 165)
-# BLUE = (66, 181, 255)
-
-# font = pygame.font.Font(None, 40)
-
-# button_size = 70
-# buttons = []
-# button_color = WHITE 
-# selected_color = PINK
-# numbers = random.sample(range(1, 26), 25) 
-# selected = [False] * 25
-
-# for i in range(25):
-#     x = (i % 5) * (button_size + 20) + 90
-#     y = (i // 5) * (button_size + 20) + 400
-#     buttons.append(pygame.Rect(x, y, button_size, button_size))
-
-# running = True
-# game_count = 0
-# Bingo_count = 0
-
-# def check_bingo(selected):
-#     Bingo_count = 0
-#     # 행와 열
-#     for i in range(5):
-#         if all(selected[i*5:(i+1)*5]):
-#             Bingo_count += 1
-#         if all([selected[i + j*5] for j in range(5)]):
-#             Bingo_count += 1
-#     # 대각선
-#     if all([selected[i*5 + i] for i in range(5)]):
-#         Bingo_count += 1
-#     if all([selected[i*5 + (4-i)] for i in range(5)]):
-#         Bingo_count += 1
-#     return Bingo_count
-
-# while running:
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT:
-#             running = False
-#         elif event.type == pygame.MOUSEBUTTONDOWN:
-#             for i, rect in enumerate(buttons):
-#                 if rect.collidepoint(event.pos) and not selected[i]:
-#                     selected[i] = True
-#                     game_count += 1
-                    
-#                 new_bingo_count = check_bingo(selected)
-                
-#                 if new_bingo_count > Bingo_count:
-#                     Bingo_count = new_bingo_count
-#                     if Bingo_count == 1:
-#                         text = font.render("BINGO!", True, PINK)
-#                         screen.blit(text, (100, 100))
-#                         pygame.display.flip()
-#                         pygame.time.wait(1000)
-#                     elif Bingo_count >= 3:
-#                         text = font.render(f"3 BINGOS! Game Over in {game_count} moves.", True, PINK)
-#                         screen.blit(text, (90, 100))
-#                         pygame.display.flip()
-#                         pygame.time.wait(1000)
-#                         running = False
-#                 break
-    
-#     screen.fill(PURPLE)
-#     for i, rect in enumerate(buttons):
-#         if selected[i]:
-#             pygame.draw.rect(screen, selected_color, rect)
-#         else:
-#             pygame.draw.rect(screen, button_color, rect)  # 버튼 색상 적용
-#         text = font.render(str(i+1), True, BLUE)
-#         screen.blit(text, (rect.x + (button_size - text.get_width()) // 2, rect.y + (button_size - text.get_height()) // 2))  # 버튼 중앙에 텍스트 표시
-        
-#     pygame.display.flip()
-    
-# pygame.quit()
 import pygame
 import random
 
@@ -107,13 +20,11 @@ button_size = 70
 buttons = []
 button_color = WHITE
 selected_color = PINK
-numbers = random.sample(range(1, 26), 25)  # 重複なしのランダムな番号
-selected = [False] * 25  # 選択状態を追跡
+numbers = random.sample(range(1, 26), 25)  
+selected = [False] * 25
 
-# フレームレートを制御するためのClockオブジェクト
 clock = pygame.time.Clock()
-
-# 数字のレンダリング結果をキャッシュ
+# 숫자 
 number_texts = [font.render(str(number), True, BLUE) for number in numbers]
 
 for i in range(25):
@@ -177,15 +88,14 @@ while running:
                             text = font.render("BINGO!", True, PINK)
                             screen.blit(text, (100, 100))
                             pygame.display.flip()
-                            pygame.time.wait(1000)  # 1秒の待機
+                            pygame.time.wait(500)  # 1秒の待機
                     else:
                         # ボタンの色を更新して再描画
                         pygame.draw.rect(screen, selected_color, rect)
                         screen.blit(number_texts[i], (rect.x + (button_size - number_texts[i].get_width()) // 2, rect.y + (button_size - number_texts[i].get_height()) // 2))
                         pygame.display.flip()
                     break
-
-    # フレームレートを60FPSに制御
+        
     clock.tick(60)
 
 pygame.quit()
