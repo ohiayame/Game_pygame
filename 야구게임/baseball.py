@@ -21,12 +21,12 @@ font = pygame.font.Font(None, 40)  # None 대신에 폰트 파일 경로를 지�
 
 # 공 이미지 로드
 ball_size = 100  # 공 크기 설정
-ball_image = pygame.image.load("C:\Game_pygame\야구게임\s_ball.png")
+ball_image = pygame.image.load("야구게임\s_ball.png")
 ball_image = pygame.transform.scale(ball_image, (ball_size, ball_size))
 
 # glove 이미지 로드
 glove_size = 100
-glove_image = pygame.image.load("C:\Game_pygame\야구게임\glove.png")
+glove_image = pygame.image.load("야구게임\glove.png")
 glove_image = pygame.transform.scale(glove_image, (glove_size,glove_size))
 
 # 난수 생성
