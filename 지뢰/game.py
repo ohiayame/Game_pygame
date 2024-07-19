@@ -1,124 +1,157 @@
 import pygame
 import random
-import sys
 
-# 초기화
+# Initialize the game
 pygame.init()
 
-# 색 정의
-BLACK = (0, 0, 0)
+# Define the colors
 WHITE = (255, 255, 255)
-GRAY = (200, 200, 200)
 RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
+PINK = (255, 142, 165)
+BLUE = (66, 181, 255)
+PURPLE = (242, 230, 255)
+viored = (142, 130, 155)
 
-# 화면 크기
-width, height = 400, 300
-rows, cols = 3, 4
-cell_size = width // cols
 
-# 화면 설정
-screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption('Minesweeper')
+# Get user input for the size of the grid
+width = int(input("Enter the width of the grid: "))
+height = int(input("Enter the height of the grid: "))
+cell_size = 50
 
-# 지뢰판 설정
-num_li = [[0] * cols for _ in range(rows)]
-boms = [[False] * cols for _ in range(rows)]
-revealed = [[False] * cols for _ in range(rows)]
-flags = [[False] * cols for _ in range(rows)]
+# Calculate screen dimensions
+screen_width = width * cell_size
+screen_height = height * cell_size
 
-# 지뢰의 개수
-bom_count = 3
+# Create the screen
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Minesweeper")
+clock = pygame.time.Clock()
 
-# 지뢰 위치 설정
-for _ in range(bom_count):
-    x, y = random.randint(0, rows - 1), random.randint(0, cols - 1)
-    while boms[x][y]:
-        x, y = random.randint(0, rows - 1), random.randint(0, cols - 1)
-    boms[x][y] = True
-    num_li[x][y] = "*"
+# Define the game variables
+num_li = [[0] * width for _ in range(height)]
+boms = [[False] * width for _ in range(height)]
+check = [[False] * width for _ in range(height)]
+flag = [[False] * width for _ in range(height)]
 
-# 주변 지뢰 수 계산
-for x in range(rows):
-    for y in range(cols):
-        if num_li[x][y] != "*":
-            bom_value = 0
-            for i in range(-1, 2):
-                for j in range(-1, 2):
-                    nx, ny = x + i, y + j
-                    if 0 <= nx < rows and 0 <= ny < cols and boms[nx][ny]:
-                        bom_value += 1
-            num_li[x][y] = bom_value
+# Define the number of mines
+num_mines = (width * height) // 5
+print("Number of mines:", num_mines)
 
-def open_cell(x, y):
-    if revealed[x][y] or flags[x][y]:
-        return
-    revealed[x][y] = True
+# Randomly place mines
+checknum = 0
+while checknum < num_mines:
+    random_x = random.randint(0, height - 1)
+    random_y = random.randint(0, width - 1)
+    if not boms[random_x][random_y]:
+        boms[random_x][random_y] = True
+        checknum += 1
+        num_li[random_x][random_y] = "*"
+
+# Define the functions
+def surroundings(x, y, menus):
+    bom = 0
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            nx = x + i
+            ny = y + j
+            if 0 <= nx < height and 0 <= ny < width:
+                if menus == view:
+                    if not check[nx][ny] and not flag[nx][ny]:
+                        view(nx, ny)
+                elif menus[nx][ny] == True:
+                    bom += 1
+    if menus != view:
+        return bom
+
+def view(x, y):
+    check[x][y] = True
     if num_li[x][y] == 0:
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                nx, ny = x + i, y + j
-                if 0 <= nx < rows and 0 <= ny < cols:
-                    open_cell(nx, ny)
+        surroundings(x, y, view)
 
-def check_victory():
-    for x in range(rows):
-        for y in range(cols):
-            if boms[x][y] and not flags[x][y]:
-                return False
-    return True
+def glaf():
+    game = False
+    msg = None
+    open_value = 0
+    for x in range(height):
+        for y in range(width):
+            if check[x][y] == True:
+                open_value += 1
+                if num_li[x][y] == "*":
+                    draw_text('*', x, y, RED)
+                    msg = "!!! Mine !!!"
+                    game = True
+                else:
+                    draw_text(str(num_li[x][y]), x, y, BLUE)
+                    if open_value == (width * height) - num_mines:
+                        msg = "Clear!!!"
+                        game = True
+            elif flag[x][y] == True:
+                draw_text('!', x, y, PINK)
+            else:
+                pygame.draw.rect(screen, PURPLE, (y * cell_size, x * cell_size, cell_size, cell_size))
+            pygame.draw.rect(screen, viored, (y * cell_size, x * cell_size, cell_size, cell_size), 1)
+    
+    if game:
+        print(msg)
+        return True
 
-# 게임 루프
+def draw_text(text, row, col, color):
+    font = pygame.font.Font(None, 36)
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect(center=(col * cell_size + cell_size // 2, row * cell_size + cell_size // 2))
+    screen.blit(text_surface, text_rect)
+
+# Calculate the number of mines around each cell
+for x in range(height):
+    for y in range(width):
+        if num_li[x][y] != "*":
+            num_li[x][y] = surroundings(x, y, boms)
+            
+    
+left_click = False
+right_click = False
+
+# Main game loop
 running = True
 while running:
+    
     screen.fill(WHITE)
     
+    x, y = pygame.mouse.get_pos()
+    grid_x, grid_y = y // cell_size, x // cell_size
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            x, y = event.pos
-            grid_x, grid_y = y // cell_size, x // cell_size
-            
-            if event.button == 1:  # 왼쪽 클릭
-                if boms[grid_x][grid_y]:
-                    print("Boom! Game Over!")
-                    running = False
+            if event.button == 1:  # Left click
+                left_click = True
+                if right_click:
+                    bom = surroundings(grid_x, grid_y, flag)
+                    if num_li[grid_x][grid_y] == bom:
+                        surroundings(grid_x, grid_y, view)
                 else:
-                    open_cell(grid_x, grid_y)
-            elif event.button == 3:  # 오른쪽 클릭
-                flags[grid_x][grid_y] = not flags[grid_x][grid_y]
-            elif event.button == 2:  # 양쪽 클릭 (중앙 클릭)
-                if revealed[grid_x][grid_y]:
-                    for i in range(-1, 2):
-                        for j in range(-1, 2):
-                            nx, ny = grid_x + i, grid_y + j
-                            if 0 <= nx < rows and 0 <= ny < cols and not flags[nx][ny]:
-                                if num_li[nx][ny] == 0:
-                                    open_cell(nx, ny)
-                                revealed[nx][ny] = True
+                    check[grid_x][grid_y] = True
 
-        if check_victory():
-            print("Congratulations! You cleared the minefield!")
-            running = False
+            elif event.button == 3:  # Right click
+                right_click = True
+                if left_click:
+                    bom = surroundings(grid_x, grid_y, flag)
+                    if num_li[grid_x][grid_y] == bom:
+                        surroundings(grid_x, grid_y, view)
+                else:
+                    flag[grid_x][grid_y] = not flag[grid_x][grid_y]
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:  # Left click
+                left_click = False
+            elif event.button == 3:  # Right click
+                right_click = False
 
-    # 그리드 그리기
-    for x in range(rows):
-        for y in range(cols):
-            rect = pygame.Rect(y * cell_size, x * cell_size, cell_size, cell_size)
-            pygame.draw.rect(screen, GRAY, rect, 1)
-            if revealed[x][y]:
-                pygame.draw.rect(screen, WHITE, rect)
-                if num_li[x][y] != 0:
-                    font = pygame.font.Font(None, 36)
-                    text = font.render(str(num_li[x][y]), True, BLACK)
-                    screen.blit(text, rect.topleft)
-            elif flags[x][y]:
-                pygame.draw.rect(screen, GREEN, rect)
-            elif boms[x][y] and not running:
-                pygame.draw.circle(screen, RED, rect.center, cell_size // 4)
-
+    if glaf():
+        pygame.display.flip()
+        pygame.time.wait(2000)
+        running = False
+        
     pygame.display.flip()
 
 pygame.quit()
