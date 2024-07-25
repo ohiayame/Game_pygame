@@ -3,7 +3,7 @@ import random
 
 pygame.init()
 
-screen_width, screen_height = 630, 400
+screen_width, screen_height = 1000, 670
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("카드 맞추기 게임")
 
@@ -21,8 +21,8 @@ button_size_y = 100
 buttons = [] 
 button_color = WHITE
 selected_color = PINK
-
-data = [1, 2, 3, 4, 5]
+num = 1
+data = [num+i for i in range(20)]
 random_list = [d for d in data for _ in range(2)]
 random.shuffle(random_list) 
 print(random_list)
@@ -35,8 +35,8 @@ clock = pygame.time.Clock()
 # 버튼의 위치
 for i in range(len(random_list)):
     # +90는 왼쪽의 여백, +400는 위의 여백
-    x = (i % len(data)) * (button_size_x + 20) + 90
-    y = (i // len(data)) * (button_size_y + 20) + 90
+    x = (i % 10) * (button_size_x + 20) + 60
+    y = (i // 10) * (button_size_y + 20) + 90
     buttons.append(pygame.Rect(x, y, button_size_x, button_size_y))
 
 def listTrue(li):
