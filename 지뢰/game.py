@@ -13,15 +13,15 @@ viored = (142, 130, 155)
 
 # 표 크기
 width = 20
-height = 19
+height = 18
 cell_size = 35
-info_height = 70  # 정보 영역 높이
+info_height = 65 # 정보 영역 높이
 
 screen_width = width * cell_size
 screen_height = height * cell_size + info_height  # 화면 높이에 정보 영역 추가
 
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("지뢰게임")
+pygame.display.set_caption("지뢰 게임")
 clock = pygame.time.Clock()
 
 num_li = [[0] * width for _ in range(height)]  # 주변에 있는 지뢰의 갯수를 저장할 리스트
@@ -81,7 +81,7 @@ def glaf():
             if check[x][y]:
                 open_value += 1
                 # 지뢰의 좌표를 입력하면 종료
-                if num_li[x][y] == "*":
+                if boms[x][y]:
                     draw_text('*', x, y, RED)
                     msg = "!!! Mine !!!"
                     game = True
@@ -93,7 +93,7 @@ def glaf():
 
             pygame.draw.rect(screen, viored, (y * cell_size, x * cell_size + info_height, cell_size, cell_size), 1)  # 囲い線
     # 지뢰를 다 피하고 출력이 되면 clear
-    if num_mines == (width * height) - open_value:
+    if not game and (num_mines == (width * height) - open_value):
         msg = "Clear!!!"
         game = True
     if game:
@@ -102,9 +102,8 @@ def glaf():
         print(msg)
         return True
 
-# 출력
 def draw_text(text, row, col, color):
-    font = pygame.font.Font(None, 36)
+    font = pygame.font.Font(None , 36)
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect(center=(col * cell_size + cell_size // 2, row * cell_size + cell_size // 2 + info_height))
     screen.blit(text_surface, text_rect)
@@ -139,10 +138,9 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if y > info_height and not game_over:  # 정보 영역을 클릭하지 않도록 함
-                game += 1
-                if event.button == 1:  # 왼쪽 클릭
+                if event.button == 1 and not flag[grid_x][grid_y]:  # 왼쪽 클릭
+                    game += 1
                     left_click = True
-
                     if game == 1:  # 처음 클릭이면 지뢰이외 주변 오픈
                         # 지뢰의 위치를 random으로 설정 True로 변환
                         checknum = 0
@@ -174,23 +172,29 @@ while running:
                                 if 0 <= nx < height and 0 <= ny < width:
                                     if not boms[nx][ny]:
                                         view(nx, ny)
+                        
                     elif right_click:  # 오른쪽도 True면 주변 오픈
                         bom = surroundings(grid_x, grid_y, boms)
-                        if num_li[grid_x][grid_y] == bom / 10:
+                        if not boms[grid_x][grid_y] and (num_li[grid_x][grid_y] == bom / 10):
                             surroundings(grid_x, grid_y, view)
 
                     else:
-                        check[grid_x][grid_y] = True  # 한 개만 오픈
-
-                elif event.button == 3:  # 오른쪽 클릭
-                    right_click = True
-                    if left_click:  # 왼쪽도 True면 주변 오픈
-                        bom = surroundings(grid_x, grid_y, boms)
-                        if num_li[grid_x][grid_y] == bom / 10:
+                        if num_li[grid_x][grid_y] == 0:
                             surroundings(grid_x, grid_y, view)
+                        else:
+                            check[grid_x][grid_y] = True  # 한 개만 오픈
+                    
+                elif event.button == 3 :  # 오른쪽 클릭
+                    if left_click :  # 왼쪽도 True면 주변 오픈
+                        if not flag[grid_x][grid_y]:
+                            bom = surroundings(grid_x, grid_y, boms)
+                            if not boms[grid_x][grid_y] and (num_li[grid_x][grid_y] == bom / 10):
+                                surroundings(grid_x, grid_y, view)
                     else:
                         flag[grid_x][grid_y] = not flag[grid_x][grid_y]
-                        remaining_mines += -1 if flag[grid_x][grid_y] else 1
+                        if not check[grid_x][grid_y]:
+                            remaining_mines += -1 if flag[grid_x][grid_y] else 1
+                    right_click = True
 
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
@@ -202,9 +206,21 @@ while running:
     if glaf():
         draw_info()
         pygame.display.flip()
-        pygame.time.wait(3000)
-        running = False
-    else:
-        draw_info()
+        game = 0
+        check = [[True] * width for _ in range(height)]
+        glaf()
         pygame.display.flip()
+        pygame.time.wait(3000)
+
+        game_over = False
+        num_li = [[0] * width for _ in range(height)]  # 주변에 있는 지뢰의 갯수를 저장할 리스트
+        boms = [[False] * width for _ in range(height)]  # 지뢰가 있으면 True
+        check = [[False] * width for _ in range(height)]  # 출력상태
+        flag = [[False] * width for _ in range(height)]  # 지뢰 예상
+        num_mines = (width * height) // 6
+        remaining_mines = num_mines
+        start_time = time.time()
+
+    draw_info()
+    pygame.display.flip()
 pygame.quit()
