@@ -17,7 +17,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        # elif event.type == pygame.KEYDOWN: # 키보드가 눌러졌다. 반복될때마다 실행
+        # elif event.type == pygame.KEYDOWN: # 키보드가 눌러졌다.
         #     if event.key == pygame.K_LEFT: # 어떤 Key가 눌러졌습니까?
         #          print("왼쪽 화살표 클릭: ", count)
         #          count += 1
@@ -26,16 +26,20 @@ while running:
 
     # <-,  -> Key를 누를 때 사각형을 좌우로 이동.
     # 키보드 입력 처리
-    # 연속적으로 실행됨
     # keys = pygame.key.get_pressed()
     
-    # # 왼쪽
-    # if keys[pygame.K_LEFT]:
-    #     print("왼쪽 화살표 클릭: ", count)
-    #     conut += 1
+    
+    keys = pygame.key.get_pressed()
+    
+    # 왼쪽 방향키가 눌러졌을 때
+    if keys[pygame.K_LEFT]:
+        rect1.x = rect1.x - speed * dt
 
+    # 오른쪽 방향키가 눌러졌을 때
+    elif keys[pygame.K_RIGHT]:
+        rect1.x += speed *dt
     
-    
+     
 
 
     # rect1.y += speed * dt
@@ -54,7 +58,7 @@ while running:
     # if rect1.right > screen.get_width():
     #    rect1.x = screen.get_width() - rect1.width
     #    speed = -speed
-    
+       
     # if rect1.x < 0:
     #     rect1.x = 0
     #     speed = -speed
