@@ -11,10 +11,19 @@ BLUE = (66, 181, 255)
 PURPLE = (242, 230, 255)
 viored = (142, 130, 155)
 
+# 배경음악 파일 로드 (background.mp3 파일을 로드)
+background_music = pygame.mixer.Sound(r"C:\Game_pygame\1_여름방학\음성\background.mp3")
+bombs_music = pygame.mixer.Sound(r"C:\Game_pygame\지뢰\zapsplat_warfare_bomb_drop_explode_designed_explosion_004_93131.mp3")
+
+# 배경음악 무한 반복 재생 시작 (-1은 무한 반복을 의미)
+background_music.set_volume(1.0) 
+background_music.play(-1)
+
+
 # 표 크기
-width = 20
-height = 18
-cell_size = 35
+width = 30
+height = 22
+cell_size = 45
 info_height = 65 # 정보 영역 높이
 
 screen_width = width * cell_size
@@ -84,6 +93,9 @@ def glaf():
                 if boms[x][y]:
                     draw_text('*', x, y, RED)
                     msg = "!!! Mine !!!"
+                    background_music.stop()
+                    bombs_music.set_volume(0.2) 
+                    bombs_music.play()
                     game = True
                 # 0은 출력 안함
                 elif num_li[x][y] > 0:
@@ -118,6 +130,7 @@ def draw_info():
     mines_surface = font.render(mines_text, True, RED)
     screen.blit(timer_surface, (10, 10))
     screen.blit(mines_surface, (10, 40))
+    
     if game_over:  # 게임 종료 메시지를 표시
         game_surface = font.render(game_message, True, RED)
         screen.blit(game_surface, (screen_width // 2, 25))
@@ -128,6 +141,7 @@ right_click = False
 running = True
 game = 0
 while running:
+    
     screen.fill(WHITE)
     # 마우스가 있는 좌표를 확인
     x, y = pygame.mouse.get_pos()
@@ -138,58 +152,60 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if y > info_height and not game_over:  # 정보 영역을 클릭하지 않도록 함
-                if event.button == 1 and not flag[grid_x][grid_y]:  # 왼쪽 클릭
+                if event.button == 1 :# 왼쪽 클릭
                     game += 1
                     left_click = True
                     if game == 1:  # 처음 클릭이면 지뢰이외 주변 오픈
-                        # 지뢰의 위치를 random으로 설정 True로 변환
-                        checknum = 0
-                        while checknum < num_mines:
-                            random_x = random.randint(0, height - 1)
-                            random_y = random.randint(0, width - 1)
-                            c = True
+                            # 지뢰의 위치를 random으로 설정 True로 변환
+                            checknum = 0
+                            while checknum < num_mines:
+                                random_x = random.randint(0, height - 1)
+                                random_y = random.randint(0, width - 1)
+                                c = True
+                                for i in range(-1, 2):
+                                    for j in range(-1, 2):
+                                        nx = grid_x + i
+                                        ny = grid_y + j
+                                        if random_x == nx and random_y == ny:
+                                            c = False
+                                if not boms[random_x][random_y] and c:
+                                    boms[random_x][random_y] = True
+                                    checknum += 1
+                                    num_li[random_x][random_y] = "*"
+
+                            # index를 한개 씩 넣어서 주변에 몇개 지뢰가 있는지 확인
+                            for x in range(height):
+                                for y in range(width):
+                                    if num_li[x][y] != "*":
+                                        num_li[x][y] = surroundings(x, y, boms)
+
                             for i in range(-1, 2):
                                 for j in range(-1, 2):
                                     nx = grid_x + i
                                     ny = grid_y + j
-                                    if random_x == nx and random_y == ny:
-                                        c = False
-                            if not boms[random_x][random_y] and c:
-                                boms[random_x][random_y] = True
-                                checknum += 1
-                                num_li[random_x][random_y] = "*"
-
-                        # index를 한개 씩 넣어서 주변에 몇개 지뢰가 있는지 확인
-                        for x in range(height):
-                            for y in range(width):
-                                if num_li[x][y] != "*":
-                                    num_li[x][y] = surroundings(x, y, boms)
-
-                        for i in range(-1, 2):
-                            for j in range(-1, 2):
-                                nx = grid_x + i
-                                ny = grid_y + j
-                                if 0 <= nx < height and 0 <= ny < width:
-                                    if not boms[nx][ny]:
-                                        view(nx, ny)
-                        
-                    elif right_click:  # 오른쪽도 True면 주변 오픈
-                        bom = surroundings(grid_x, grid_y, boms)
-                        if not boms[grid_x][grid_y] and (num_li[grid_x][grid_y] == bom / 10):
-                            surroundings(grid_x, grid_y, view)
-
-                    else:
+                                    if 0 <= nx < height and 0 <= ny < width:
+                                        if not boms[nx][ny]:
+                                            view(nx, ny)
+                    # 오픈
+                    if not flag[grid_x][grid_y]:          
+                        if right_click:  # 오른쪽도 True면 주변 오픈
+                            bom = surroundings(grid_x, grid_y, boms)
+                            if not boms[grid_x][grid_y] and (num_li[grid_x][grid_y] == bom / 10):
+                                surroundings(grid_x, grid_y, view)
+                            
                         if num_li[grid_x][grid_y] == 0:
                             surroundings(grid_x, grid_y, view)
                         else:
-                            check[grid_x][grid_y] = True  # 한 개만 오픈
-                    
+                                check[grid_x][grid_y] = True  # 한 개만 오픈
+                        
+                        
                 elif event.button == 3 :  # 오른쪽 클릭
                     if left_click :  # 왼쪽도 True면 주변 오픈
                         if not flag[grid_x][grid_y]:
                             bom = surroundings(grid_x, grid_y, boms)
                             if not boms[grid_x][grid_y] and (num_li[grid_x][grid_y] == bom / 10):
                                 surroundings(grid_x, grid_y, view)
+                    # ! 지뢰 체크
                     else:
                         flag[grid_x][grid_y] = not flag[grid_x][grid_y]
                         if not check[grid_x][grid_y]:
@@ -220,6 +236,8 @@ while running:
         num_mines = (width * height) // 6
         remaining_mines = num_mines
         start_time = time.time()
+        # 배경음악 무한 반복 재생 시작 (-1은 무한 반복을 의미)
+        background_music.play(-1)
 
     draw_info()
     pygame.display.flip()
